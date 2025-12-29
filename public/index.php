@@ -1,11 +1,11 @@
 <?php
 
-include('config/database.php');
+include('../config/database.php');
     session_start();
 
 $_SESSION['user_id']= null;
 
-require_once 'includes/header.php';
+require_once '../includes/header.php';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -13,7 +13,7 @@ require_once 'includes/header.php';
     <meta charset="UTF-8">
     <title>Digital Garden</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="../public_assets/css/style.css">
 </head>
 <body>
 <main class="hero-section">
@@ -28,7 +28,7 @@ require_once 'includes/header.php';
 </main>
 
 <?php
-require_once 'includes/footer.php';
+require_once '../includes/footer.php';
 ?>
 </body>
 </html>

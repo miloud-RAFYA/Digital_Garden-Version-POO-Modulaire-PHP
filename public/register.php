@@ -1,5 +1,5 @@
 <?php
-include('config/database.php');
+include('../config/database.php');
 session_start();
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
 if (isset($_POST["register"])) {
@@ -28,7 +28,7 @@ if (isset($_POST["register"])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Garden</title>
-    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="../public_assets/css/style.css">
 </head>
 
 <body>
