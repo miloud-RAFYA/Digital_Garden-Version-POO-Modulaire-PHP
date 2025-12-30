@@ -1,6 +1,24 @@
 <?php
-$cnx=mysqli_connect("localhost","root","","digitalGarden");
-if(mysqli_connect_error()==true){
-    die("Erreur de connexion: ".Mysqli_connect_error());
+class Database{
+    private $host='localhost';
+    private $userName='root';
+    private $dbName='digitalGarden';
+    private $password='';
+
+    public $conn;
+
+    public function getConnection(){
+        try{
+            $this->conn=new PDO("mysql:host=$this->host;dbname=$this->dbName;",$this->userName,$this->password);
+
+        }catch(PDOException $e){
+             var_dump($e->getMessage());
+        }
+
+        return $this->conn;
+    }
 }
+$conect= new Database();
+$con=$conect->getConnection();
+var_dump($con);
 ?>
