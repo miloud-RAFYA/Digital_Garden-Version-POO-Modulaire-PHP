@@ -1,20 +1,11 @@
 <?php
-include('../config/database.php');
-include('../src/Entity/User.php');
+require_once __DIR__.'/../src/Service/RegisterService.php';
 session_start();
 
-if ($_SERVER['REQUEST_METHOD'] === "POST") {
-if (isset($_POST["register"])) {
-    $fname = $_POST['fname'];
-    $name = $_POST['username'];
-    $password = $_POST['password'];
-    $Confirme = $_POST['Confirme'];
-    $user=new User($fname, $name, $password);
-    $userRep=new UserRepository();
-    $userRep->createUser($user,$Confirme);
-    
-}
-}
+ if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST["register"])) {
+        $addUser=new RegisterService();
+        $addUser->createUser($_POST['fname'],$_POST['username'],$_POST['password'],$_POST['Confirme']) ;
+        }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -35,6 +26,10 @@ if (isset($_POST["register"])) {
                 <input type="text" name="username" placeholder="username" required>
                 <input type="password" name="password" placeholder="password" required>
                 <input type="password" name="Confirme" placeholder="Confirme password" required>
+                <?php if(!empty($_SESSION['register_error'])):?>
+                <span><?= $_SESSION['register_error'] ?></span>
+                <?php unset($_SESSION['register_error']) ?>
+                <?php endif?>
                 <button type="submit" name="register">Register</button>
                 <p>Already have an account ?<a href="login.php">Login</a></p>
             </form>

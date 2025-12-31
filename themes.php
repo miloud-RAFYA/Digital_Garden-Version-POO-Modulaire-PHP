@@ -2,17 +2,20 @@
 session_start();
 // require_once 'includes/auth.php';
 require_once 'includes/header.php';
-require_once 'config/database.php';
+require_once 'src/Repository/ThemeRepository.php';
 
-$user_Id = $_SESSION['user_id'] ?? null;
-if (!$user_Id) {
-    header("Location: login.php");
-    exit();
-}
+$display=new ThemeRepository();
+$themes=$display->displayThemes();
+
+// $user_Id = $_SESSION['user_id'] ?? null;
+// if (!$user_Id) {
+//     header("Location: login.php");
+//     exit();
+// }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
-    var_dump($_POST['enregistrer']);
-    if($_POST['enregistrer']=="Creer"){ 
+    if($_POST['action']=="Créer"){
+        
     try {
         
         $nameTheme = $_POST['themeName'] ?? '';
@@ -39,7 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
     } catch (Exception $e) {
         $_SESSION['error_message'] = "erreur de conection post" . $e->getMessage();
     }
-}else if ($_POST['enregistrer']=='Modifier'){
+}else if ($_POST['action']=='Modifier'){
+    echo"modifier ";
+        exit; 
       $theme_id=$_POST['theme_id'];
       var_dump('$theme_id');
 }
@@ -85,17 +90,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
 }
 
 // RÉCUPÉRATION DES THÈMES
-try {
-    $query = "SELECT * FROM themes WHERE user_id = ?";
-    $stmt = mysqli_prepare($cnx, $query);
-    mysqli_stmt_bind_param($stmt, "i", $user_Id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+// try {
+//     $query = "SELECT * FROM themes WHERE user_id = ?";
+//     $stmt = mysqli_prepare($cnx, $query);
+//     mysqli_stmt_bind_param($stmt, "i", $user_Id);
+//     mysqli_stmt_execute($stmt);
+//     $result = mysqli_stmt_get_result($stmt);
 
-} catch (Exception $e) {
-    $result = false;
-    $_SESSION['error_message'] = "Erreur de connexion " . $e->getMessage();
-}
+// } catch (Exception $e) {
+//     $result = false;
+//     $_SESSION['error_message'] = "Erreur de connexion " . $e->getMessage();
+// }
 
 ?>
 
@@ -187,8 +192,8 @@ try {
 
         <!-- Liste des thèmes -->
         <div class="theme-list">
-            <?php if ($result && mysqli_num_rows($result) > 0): ?>
-                <?php while ($theme = mysqli_fetch_assoc($result)): ?>
+            <?php if ($result ): ?>
+                <?php foreach ($result as $theme): ?>
                     <div class="theme-card" style="--theme-color: <?= htmlspecialchars($theme['color']) ?>">
                         <div class="theme-header">
                             <div class="theme-color" style="background: <?= htmlspecialchars($theme['color']) ?>"></div>
@@ -254,7 +259,7 @@ try {
             <?php endif; ?>
         </div>
     </main>
-    <script src="public/js/script.js"></script>
+    <script src="public_assets/js/script.js"></script>
     <?php
     if (isset($stmt)) {
         mysqli_stmt_close($stmt);
