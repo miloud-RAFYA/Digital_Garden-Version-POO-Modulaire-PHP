@@ -1,24 +1,23 @@
 <?php
-class Database{
-    private $host='localhost';
-    private $userName='root';
-    private $dbName='digitalGarden';
-    private $password='';
+class Database
+{
+    private $host = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $database = "digitalGarden";
 
-    public $conn;
+    private $conn = null;
+    public function getConnection()
+    {
+        try {
+            $this->conn = new PDO("mysql:host=$this->host;dbname=$this->database", $this->username, $this->password);
 
-    public function getConnection(){
-        try{
-            $this->conn=new PDO("mysql:host=$this->host;dbname=$this->dbName;",$this->userName,$this->password);
-
-        }catch(PDOException $e){
-             var_dump($e->getMessage());
+        } catch (PDOException $e) {
+            echo 'error' . $e->getMessage();
         }
 
         return $this->conn;
     }
 }
-$conect= new Database();
-$con=$conect->getConnection();
-var_dump($con);
+
 ?>

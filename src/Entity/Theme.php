@@ -4,7 +4,7 @@ class Theme{
     private $name ;
     private $color ;
     private $tags ;
-    private User $user ;
+    private  $user ;
     public function __construct($name,$color,$tags){
             $this->name=$name;
             $this->color=$color;
