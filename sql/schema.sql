@@ -23,6 +23,25 @@ CREATE TABLE themes (
     tags TEXT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+-- Insertion pour l'utilisateur ID 1 (admin)
+INSERT INTO themes (user_id, name, color, tags) VALUES
+(1, 'Jardin Méditerranéen', '#4CAF50', 'méditerranée,soleil,aromatiques'),
+(1, 'Potager Urbain', '#8BC34A', 'potager,urbain,légumes,bio'),
+(1, 'Japonais Zen', '#009688', 'japonais,zen,minimaliste,bambou');
+
+-- Insertion pour l'utilisateur ID 2
+INSERT INTO themes (user_id, name, color, tags) VALUES
+(2, 'Roses Anglaises', '#E91E63', 'roses,anglais,romantique,fleurs'),
+(2, 'Herbes Culinaires', '#795548', 'herbes,cuisine,aromates,épices');
+
+-- Insertion pour l'utilisateur ID 3
+INSERT INTO themes (user_id, name, color, tags) VALUES
+(3, 'Cactus & Succulentes', '#8BC34A', 'cactus,succulentes,désert,xérophile'),
+(3, 'Jardin de Pluie', '#2196F3', 'pluie,écologie,eau,humidité');
+
+-- Insertion pour l'utilisateur ID 4
+INSERT INTO themes (user_id, name, color, tags) VALUES
+(4, 'Forêt Comestible', '#4CAF50', 'forêt,comestible,permaculture,arbre');
 DROP TABLE themes;
 -- TABLE NOTES
 CREATE TABLE notes (

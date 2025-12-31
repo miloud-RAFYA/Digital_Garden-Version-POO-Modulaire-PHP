@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.themeFormElement.classList.remove('edit-mode');
         elements.formTitle.textContent = 'Nouveau Thème';
         elements.submitText.textContent = 'Créer';
-         elements.formAction.value = 'Modifier';
+         elements.formAction.value = 'Créer';
         elements.themeId.value = '';
         elements.themeName.value = '';
         elements.themeColor.value = '#4CAF50';
@@ -112,13 +112,10 @@ document.addEventListener('DOMContentLoaded', function() {
         elements.themeFormElement.classList.add('edit-mode');
         elements.formTitle.textContent = 'Modifier le Theme';
         elements.submitText.textContent = 'Modifier';
-        elements.formAction.value = 'Modifier';
+        elements.formAction.value = 'Créer';
         elements.themeName.value=card.getAttribute("data-name"); 
         elements.themeColor.value=card.getAttribute("data-color"); 
         elements.themeTags.value=card.getAttribute("data-tags");
-        console.log(card.getAttribute("data-name")) 
-        console.log(card.getAttribute("data-color")) 
-        console.log(card.getAttribute("data-tags")) 
         updateColorPreview();
     }
 

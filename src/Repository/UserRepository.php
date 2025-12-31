@@ -11,11 +11,10 @@ class UserRepository
         $pd = new Database();
         $this->pdo = $pd->getConnection();
     }
-    public function checkUser(User $user)
-    {
-        $stmt = $this->pdo->prepare("select u.username, r.userRole  from users u join role r  on  u.id = r.id Where  username = ?");
+   public function checkUser($user){
+        $stmt = $this->pdo->prepare("SELECT u.id, u.username, u.password,u.created_at, r.userRole FROM users u JOIN role r ON u.id = r.id WHERE u.username = ?");
         $stmt->execute([$user->username]);
-        return $stmt->fetchAll(pdo::FETCH_ASSOC);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
     }
     public function isertUser($user)
     {

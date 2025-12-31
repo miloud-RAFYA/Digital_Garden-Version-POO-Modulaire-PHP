@@ -3,35 +3,30 @@ session_start();
 // require_once 'includes/auth.php';
 require_once 'includes/header.php';
 require_once 'src/Repository/ThemeRepository.php';
-
+require_once 'src/Entity/Theme.php';
+$user_Id=$_SESSION['user_id'];
 $display=new ThemeRepository();
-$themes=$display->displayThemes();
+// $themes=$display->displayThemes($user_Id);
 
-// $user_Id = $_SESSION['user_id'] ?? null;
+
+
 // if (!$user_Id) {
 //     header("Location: login.php");
 //     exit();
 // }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
-    if($_POST['action']=="Créer"){
+    // if($_POST['action']=="Créer"){
         
-    try {
-        
+    try {    
         $nameTheme = $_POST['themeName'] ?? '';
         $themeColor = $_POST['themeColor'] ?? '';
         $themeTags = $_POST['themeTags'] ?? '';
 
         if (!empty($nameTheme) && !empty($themeColor)) {
-            $sql = "INSERT INTO themes (user_id, name, color, tags) VALUES (?, ?, ?, ?)";
-            $stmt = mysqli_prepare($cnx, $sql);
-            mysqli_stmt_bind_param($stmt, "isss", $user_Id, $nameTheme, $themeColor, $themeTags);
-            if (mysqli_stmt_execute($stmt)) {
-                $_SESSION['success_message'] = "Theme cree avec succes !";
-            } else {
-                $_SESSION['error_message'] = "Erreur lors de la creation : ";
-            }
-            mysqli_stmt_close($stmt);
+               $theme=new Theme($nameTheme,$themeColor,$themeTags);
+               $theme->setUser($user_Id);
+               $display->isertTheme($theme);
             // header("Location: themes.php");
             // exit();
         } else {
@@ -42,12 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
     } catch (Exception $e) {
         $_SESSION['error_message'] = "erreur de conection post" . $e->getMessage();
     }
-}else if ($_POST['action']=='Modifier'){
-    echo"modifier ";
+// }else if ($_POST['action']=='Modifier'){
+    var_dump($_POST['action']);
         exit; 
       $theme_id=$_POST['theme_id'];
       var_dump('$theme_id');
-}
+// }
 }
 echo isset($_POST['delete']);
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
@@ -112,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
     <title>Thèmes | Digital Garden</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="public_assets\css\style.css">
     <style>
         /* Styles pour le mode édition */
     </style>
@@ -149,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
         <!-- Formulaire d'ajout/modification -->
         <div class="form-container" id="themeForm">
             <h3><i class="fas fa-plus-circle"></i> <span id="formTitle">Nouveau Thème</span></h3>
-            <form method="POST" action="" id="themeFormElement">
+            <form method="POST" action="themes.php" id="themeFormElement">
                 <!-- Champ caché pour l'ID en mode édition -->
                 <input type="hidden" id="themeId" name="theme_id" value="">
                 <input type="hidden" id="formAction" name="action" value="create">
@@ -192,8 +187,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
 
         <!-- Liste des thèmes -->
         <div class="theme-list">
-            <?php if ($result ): ?>
-                <?php foreach ($result as $theme): ?>
+            <?php if ($themes ): ?>
+                <?php foreach ($themes as $theme): ?>
                     <div class="theme-card" style="--theme-color: <?= htmlspecialchars($theme['color']) ?>">
                         <div class="theme-header">
                             <div class="theme-color" style="background: <?= htmlspecialchars($theme['color']) ?>"></div>
@@ -249,14 +244,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
                             </form>
                         </div>
                     </div>
-                <?php endwhile; ?>
-            <?php else: ?>
+                    <?php endforeach ?>
+                    <?php  else :?>
                 <div class="empty-state">
                     <i class="fas fa-palette"></i>
                     <p>Aucun thème pour le moment</p>
                     <p style="font-size: 14px; color: #999;">Cliquez sur "Ajouter un thème" pour commencer</p>
                 </div>
-            <?php endif; ?>
+                <?php  endif ?>
+             
         </div>
     </main>
     <script src="public_assets/js/script.js"></script>

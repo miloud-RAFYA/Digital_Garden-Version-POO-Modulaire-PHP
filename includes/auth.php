@@ -1,35 +1,35 @@
 <?php
 include('../config/database.php');
+include('../src/Repository/UserRepository.php');
 session_start();
 
+if (isset($_POST['login'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-if ($_SERVER['REQUEST_METHOD'] === "POST" && isset($_POST["login"])) {
-    formLogin($cnx);
-}
-function formLogin($cnx)
-{
-    $name = $_POST['username'];
-    $pwd = $_POST['password'];
-    $stm = Mysqli_prepare($cnx, "SELECT * FROM users WHERE username = ? ");
-    mysqli_stmt_bind_param($stm, "s", $name);
-    mysqli_stmt_execute($stm);
-    $result = mysqli_stmt_get_result($stm);
-    if (mysqli_num_rows($result) > 0) {
-        $usres = mysqli_fetch_assoc($result);
-        if (password_verify($pwd, $usres["password"])) {
-            $_SESSION['user_id'] = $usres['id'];
-            $_SESSION['username'] = $usres['fName'];
-            $_SESSION['date_inscription'] = $usres['created_at'];
-            $_SESSION['login_time'] = date('H:i:s');
-            header("location: dashboard.php");
-            exit();
+    $userRepo = new UserRepository();
+    $user = $userRepo->checkUser($username, $password);
+
+    if ($user) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['userRole'];
+        // $_SESSION['login_time']=
+        $_SESSION['date_inscription']=$user['created_at'];
+
+        if ($user['userRole'] === 'admin') {
+            echo "admin";
+            header('Location: ../admin/dashboard.php');
         } else {
-            $_SESSION["login_error"] = "username ou mot de passe incorecte";
-            header("location: login.php");
-            exit();
+            echo "user";
+            header('Location: ../public/dashboard.php');
         }
+        exit();
     } else {
-        $_SESSION["login_error"] = "username ou mot de passe incorecte";
+        $_SESSION['login_error'] = 'Invalid credentials';
+        echo "error";
+        header('Location: ../public/login.php');
+        exit();
     }
 }
 ?>
