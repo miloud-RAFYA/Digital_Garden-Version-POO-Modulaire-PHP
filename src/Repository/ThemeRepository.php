@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../../config/database.php';
 class ThemeRepository
 {
@@ -10,22 +11,18 @@ class ThemeRepository
         $this->conn = $db->getConnection();
     }
 
-    public function isertTheme( $theme)
+    public function isertTheme( Theme $theme)
     {
         try {
-            $sql = "INSERT INTO themes (user_id, name, color, tags) VALUES (:user_Id, :nameTheme, :themeColor, :themeTags)";
+            $sql = "INSERT INTO themes (user_id, name, color, tags) VALUES ('$theme->user', '$theme->name', '$theme->color', '$theme->tags')";
             $stmt = $this->conn->prepare( $sql);
-            $stmt->bindParam(":user_Id", $theme->user);
-            $stmt->bindParam(":nameTheme", $theme->name);
-            $stmt->bindParam(":themeColor", $theme->color);
-            $stmt->bindParam(":themeTags", $theme->tags);
             if ($stmt->execute()) {
                 $_SESSION['success_message'] = "Theme cree avec succes !";
             } else {
                 $_SESSION['error_message'] = "Erreur lors de la creation : ";
             }
         } catch (PDOException $e) {
-
+              echo "error".$e->getMessage();
         }
     }
     // public function displayThemes($user_Id)

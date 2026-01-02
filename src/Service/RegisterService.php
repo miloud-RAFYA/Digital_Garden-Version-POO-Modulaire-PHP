@@ -16,9 +16,7 @@ class RegisterService
         $user = new User($name, $password);
         $user->setFname($fname);
         $userRep = new UserRepository();
-        $resultat = $userRep->checkUser($user);
-        var_dump($resultat);
-        
+        $resultat = $userRep->checkUser($user); 
         if (!$resultat && $Confirme == $user->password) {
             $create = $userRep->isertUser($user);
             if ($create) {

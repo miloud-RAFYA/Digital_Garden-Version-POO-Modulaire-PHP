@@ -4,7 +4,7 @@ session_start();
 require_once 'includes/header.php';
 require_once 'src/Repository/ThemeRepository.php';
 require_once 'src/Entity/Theme.php';
-$user_Id=$_SESSION['user_id'];
+$user_Id=1;
 $display=new ThemeRepository();
 // $themes=$display->displayThemes($user_Id);
 
@@ -38,8 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
         $_SESSION['error_message'] = "erreur de conection post" . $e->getMessage();
     }
 // }else if ($_POST['action']=='Modifier'){
-    var_dump($_POST['action']);
-        exit; 
+
       $theme_id=$_POST['theme_id'];
       var_dump('$theme_id');
 // }

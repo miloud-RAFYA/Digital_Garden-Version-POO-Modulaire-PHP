@@ -1,20 +1,26 @@
 <?php
 include('../config/database.php');
 include('../src/Repository/UserRepository.php');
+include('../src/Entity/User.php');
+include('../src/Entity/Role.php');
 session_start();
 
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $user=new User($username,$password);
+
 
     $userRepo = new UserRepository();
-    $user = $userRepo->checkUser($username, $password);
+    $user = $userRepo->checkUser($user);
+
 
     if ($user) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['userRole'];
-        // $_SESSION['login_time']=
+        $_SESSION['fName']=$user['fName'];
+        $_SESSION['password']=$user['password'];
         $_SESSION['date_inscription']=$user['created_at'];
 
         if ($user['userRole'] === 'admin') {
