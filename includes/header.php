@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <title>Digital Garden</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="../public_assets\css\style.css">
 </head>
 <body>
 <header>
@@ -19,12 +19,12 @@ if (session_status() === PHP_SESSION_NONE) {
     </p>
     <nav>
         <?php if(isset($_SESSION['user_id'])): ?>
-            <a href="themes.php">Gestion Thèmes</a>
-            <a href="notes.php">Géstion Notes</a>
-            <a href="login.php">Déconnexion</a>
+            <a href="../themes.php">Gestion Thèmes</a>
+            <a href="../notes.php">Géstion Notes</a>
+            <a href="../public/login.php">Déconnexion</a>
         <?php else: ?>
-            <a href="login.php">Login</a>
-            <a href="register.php">S'inscrire</a>
+            <a href="../public/login.php">Login</a>
+            <a href="../public/register.php">S'inscrire</a>
         <?php endif; ?>
     </nav>
 </header>

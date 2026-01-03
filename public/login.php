@@ -11,10 +11,10 @@
 <body>
     <div class="container">
         <div class="form-box" id="login-form">
-            <form action="login.php" method="POST">
+            <form action="../includes/auth.php" method="POST">
                 <h2>login</h2>
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="password" required>
+                <input type="text" name="username" placeholder="Username">
+                <input type="password" name="password" placeholder="password">
                 <button type="submit" name="login">Login</button>
                 <?php if (isset($_SESSION["login_error"])): ?>
                 <p style="color:red"><?= $_SESSION["login_error"]?></p>
