@@ -23,8 +23,9 @@ class RegisterService
         }
         
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        
-        if ($this->userRepository->insertUser($fname, $name, $hashedPassword)) {
+         $user = new User($name, $hashedPassword);
+        $user->setFname($fname);
+        if ($this->userRepository->insertUser($user)) {
             header("location: login.php");
             exit();
         } else {
