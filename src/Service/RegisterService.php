@@ -1,36 +1,37 @@
 <?php
 require_once __DIR__.'/../Repository/UserRepository.php';
-require_once __DIR__.'/../Entity/User.php';
+
 class RegisterService
 {
-    private $conn;
+    private $userRepository;
 
     public function __construct()
     {
-        $db = new Database();
-        $this->conn = $db->getConnection();
+        $this->userRepository = new UserRepository();
     }
 
     public function createUser($fname, $name, $password, $Confirme)
     {
-        $user = new User($name, $password);
+        if ($this->userRepository->userExists($name)) {
+            $_SESSION['register_error'] = 'User already exists';
+            return false;
+        }
+        
+        if ($password !== $Confirme) {
+            $_SESSION['register_error'] = 'Passwords do not match';
+            return false;
+        }
+        
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+         $user = new User($name, $hashedPassword);
         $user->setFname($fname);
-        $userRep = new UserRepository();
-        $resultat = $userRep->checkUser($user); 
-        if (!$resultat && $Confirme == $user->password) {
-            $create = $userRep->isertUser($user);
-            if ($create) {
-                header("location: login.php");
-                exit();
-            } else {
-                $_SESSION['register_error'] = 'les donnes non valaid';
-            }
-
+        if ($this->userRepository->insertUser($user)) {
+            header("location: login.php");
+            exit();
         } else {
-               $_SESSION['register_error'] = 'les donnes non valaid';
+            $_SESSION['register_error'] = 'Registration failed';
+            return false;
         }
     }
-
-
 }
 ?>
