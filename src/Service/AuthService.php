@@ -1,11 +1,13 @@
 <?php
-require_once('../config/database.php');
-require_once('../src/Repository/UserRepository.php');
+// require_once('../config/database.php');
+require_once __DIR__ . '/../Repository/UserRepository.php';
 
-class AuthService {
+class AuthService
+{
     private $userRepository;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->userRepository = new UserRepository();
     }
     
@@ -18,17 +20,22 @@ class AuthService {
             $this->setLoginError();
         }
     }
-    
-    private function startSession($user) {
+
+    private function startSession($user)
+    {
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['userRole'];
+        $_SESSION['fName'] = $user['fName'];
+        $_SESSION['password'] = $user['password'];
+        $_SESSION['date_inscription'] = $user['created_at'];
     }
-    
-    private function redirectUser($role) {
+
+    private function redirectUser($role)
+    {
         if ($role === 'admin') {
             header('Location: /Digital_Garden-Version-POO-Modulaire-PHP/admin/dashboard.php');
         } else {
@@ -36,8 +43,8 @@ class AuthService {
         }
         exit();
     }
-    
-    private function setLoginError() {
+    private function setLoginError()
+    {
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
@@ -46,4 +53,3 @@ class AuthService {
         exit();
     }
 }
-?>

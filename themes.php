@@ -2,21 +2,22 @@
 session_start();
 require_once 'includes/header.php';
 require_once 'src/Repository/ThemeRepository.php';
+require_once 'src/Service/TeamService.php';
 require_once 'src/Entity/Theme.php';
 
 $user_Id = $_SESSION['user_id'];
 $themeRepo = new ThemeRepository();
 $themes = $themeRepo->getThemesByUser($user_Id);
 
+$user_Id= $_SESSION['user_id'];
 
-
-// if (!$user_Id) {
-//     header("Location: login.php");
-//     exit();
-// }
+if (!$user_Id) {
+    header("Location: login.php");
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
-    // if($_POST['action']=="Créer"){
+    if($_POST['action']=="Créer"){
         
     try {    
         $nameTheme = $_POST['themeName'] ?? '';
