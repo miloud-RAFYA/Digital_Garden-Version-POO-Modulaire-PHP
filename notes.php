@@ -1,7 +1,31 @@
 <?php
 session_start();
-// require_once 'includes/auth.php';
 require_once 'includes/header.php';
+require_once 'src/Service/NoteService.php';
+
+$noteService = new NoteService();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveNote'])) {
+    $title = $_POST['noteTitle'];
+    $themeId = $_POST['noteTheme'];
+    $importance = $_POST['importanceValue'];
+    $content = $_POST['noteContent'];
+    
+    // Debug: Check if data is received
+    error_log("Note data: Title=$title, ThemeId=$themeId, Importance=$importance, Content=$content");
+    
+    if ($noteService->createNote($title, $themeId, $importance, $content)) {
+        $_SESSION['note_success'] = 'Note créée avec succès';
+    } else {
+        $_SESSION['note_error'] = 'Erreur lors de la création de la note';
+    }
+    
+    header('Location: notes.php');
+    exit();
+}
+
+$themes = $noteService->getAllThemes();
+$notes = $noteService->getAllNotes();
 ?>
 
 <!DOCTYPE html>
@@ -29,6 +53,23 @@ require_once 'includes/header.php';
                 </button>
             </div>
         </div>
+        
+        <!-- Messages -->
+        <?php if (isset($_SESSION['note_success'])): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <?= htmlspecialchars($_SESSION['note_success']) ?>
+                <?php unset($_SESSION['note_success']); ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (isset($_SESSION['note_error'])): ?>
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <?= htmlspecialchars($_SESSION['note_error']) ?>
+                <?php unset($_SESSION['note_error']); ?>
+            </div>
+        <?php endif; ?>
         
         <!-- Statistiques -->
         <div class="stats-cards">
@@ -80,15 +121,14 @@ require_once 'includes/header.php';
                     <label for="themeFilter">Thème</label>
                     <select class="filter-select" id="themeFilter">
                         <option value="">Tous les thèmes</option>
-                        <option value="productivity">Productivité</option>
-                        <option value="travel">Voyage</option>
-                        <option value="ideas">Idées</option>
-                        <option value="learning">Apprentissage</option>
+                        <?php foreach($themes as $theme): ?>
+                            <option value="<?= $theme['id'] ?>"><?= htmlspecialchars($theme['name']) ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 
                 <div class="filter-group">
-                    <label for="importanceFilter">Importance</label>
+                    <label name = "important" for="importanceFilter">Importance</label>
                     <select class="filter-select" id="importanceFilter">
                         <option value="">Tous les niveaux</option>
                         <option value="5">⭐⭐⭐⭐⭐</option>
@@ -114,187 +154,42 @@ require_once 'includes/header.php';
         
         <!-- Liste des notes -->
         <div class="notes-list">
-            <!-- Note 1 -->
-            <div class="note-card">
-                <div class="note-header">
-                    <div class="note-title-section">
-                        <h3>Idées pour le projet Digital Garden</h3>
-                        <div class="note-meta">
-                            <span class="note-theme">Productivité</span>
-                            <span class="note-date">
-                                <i class="far fa-calendar"></i> Aujourd'hui, 14:30
-                            </span>
+            <?php if ($notes): ?>
+                <?php foreach ($notes as $note): ?>
+                    <div class="note-card">
+                        <div class="note-header">
+                            <div class="note-title-section">
+                                <h3><?= htmlspecialchars($note['title']) ?></h3>
+                                <div class="note-meta">
+                                    <span class="note-theme"><?= htmlspecialchars($note['theme_name']) ?></span>
+                                    <span class="note-date">
+                                        <i class="far fa-calendar"></i> <?= date('d/m/Y H:i', strtotime($note['created_at'])) ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="note-content">
+                            <?= htmlspecialchars($note['content']) ?>
+                        </div>
+                        
+                        <div class="note-footer">
+                            <div class="note-importance">
+                                <?php for($i = 1; $i <= 5; $i++): ?>
+                                    <i class="<?= $i <= $note['importance'] ? 'fas' : 'far' ?> fa-star"></i>
+                                <?php endfor; ?>
+                                <span style="color: #666; margin-left: 5px;">(<?= $note['importance'] ?>/5)</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="note-actions">
-                        <button class="btn-note-action" onclick="editNote(1)" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-note-action delete" onclick="deleteNote(1)" title="Supprimer">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="empty-state">
+                    <i class="fas fa-sticky-note"></i>
+                    <p>Aucune note pour le moment</p>
+                    <p style="font-size: 14px; color: #999;">Cliquez sur "Nouvelle note" pour commencer</p>
                 </div>
-                
-                <div class="note-content">
-                    Réflexions sur l'architecture du nouveau projet et les technologies à utiliser. 
-                    Penser à l'optimisation des performances et à la scalabilité. Intégrer un système 
-                    de notifications en temps réel.
-                </div>
-                
-                <div class="note-footer">
-                    <div class="note-tags">
-                        <span class="note-tag">travail</span>
-                        <span class="note-tag">projet</span>
-                        <span class="note-tag">planification</span>
-                    </div>
-                    <div class="note-importance">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <span style="color: #666; margin-left: 5px;">(3/5)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Note 2 -->
-            <div class="note-card">
-                <div class="note-header">
-                    <div class="note-title-section">
-                        <h3>Liste de destinations 2025</h3>
-                        <div class="note-meta">
-                            <span class="note-theme">Voyage</span>
-                            <span class="note-date">
-                                <i class="far fa-calendar"></i> Hier, 18:15
-                            </span>
-                        </div>
-                    </div>
-                    <div class="note-actions">
-                        <button class="btn-note-action" onclick="editNote(2)" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-note-action delete" onclick="deleteNote(2)" title="Supprimer">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="note-content">
-                    Japon - Tokyo, Kyoto, Osaka. Islande - Route circulaire et aurores boréales. 
-                    Italie - Rome, Florence, Venise. Canada - Vancouver, Montréal, Toronto.
-                </div>
-                
-                <div class="note-footer">
-                    <div class="note-tags">
-                        <span class="note-tag">voyage</span>
-                        <span class="note-tag">planning</span>
-                        <span class="note-tag">aventure</span>
-                    </div>
-                    <div class="note-importance">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <span style="color: #666; margin-left: 5px;">(2/5)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Note 3 -->
-            <div class="note-card">
-                <div class="note-header">
-                    <div class="note-title-section">
-                        <h3>Notes PHP avancé</h3>
-                        <div class="note-meta">
-                            <span class="note-theme">Apprentissage</span>
-                            <span class="note-date">
-                                <i class="far fa-calendar"></i> 15 déc. 2024
-                            </span>
-                        </div>
-                    </div>
-                    <div class="note-actions">
-                        <button class="btn-note-action" onclick="editNote(3)" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-note-action delete" onclick="deleteNote(3)" title="Supprimer">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="note-content">
-                    Nouveautés PHP 8 : attributes, union types, match expression, nullsafe operator. 
-                    Design patterns à étudier : repository, strategy, observer. Performance : opcode 
-                    caching avec OPcache, profiling avec Blackfire.
-                </div>
-                
-                <div class="note-footer">
-                    <div class="note-tags">
-                        <span class="note-tag">php</span>
-                        <span class="note-tag">programmation</span>
-                        <span class="note-tag">étude</span>
-                    </div>
-                    <div class="note-importance">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <span style="color: #666; margin-left: 5px;">(5/5)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Note 4 -->
-            <div class="note-card">
-                <div class="note-header">
-                    <div class="note-title-section">
-                        <h3>Réflexions du matin</h3>
-                        <div class="note-meta">
-                            <span class="note-theme">Idées</span>
-                            <span class="note-date">
-                                <i class="far fa-calendar"></i> 12 déc. 2024
-                            </span>
-                        </div>
-                    </div>
-                    <div class="note-actions">
-                        <button class="btn-note-action" onclick="editNote(4)" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-note-action delete" onclick="deleteNote(4)" title="Supprimer">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="note-content">
-                    L'innovation vient souvent des connexions inattendues entre des idées 
-                    apparemment sans rapport. Prendre le temps de réfléchir sans pression est 
-                    essentiel pour la créativité. La méditation quotidienne aide à clarifier 
-                    les pensées.
-                </div>
-                
-                <div class="note-footer">
-                    <div class="note-tags">
-                        <span class="note-tag">réflexion</span>
-                        <span class="note-tag">inspiration</span>
-                        <span class="note-tag">créativité</span>
-                    </div>
-                    <div class="note-importance">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <span style="color: #666; margin-left: 5px;">(4/5)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Ajouter d'autres notes ici... -->
+            <?php endif; ?>
         </div>
     </main>
 
@@ -305,22 +200,20 @@ require_once 'includes/header.php';
                 <h2><i class="fas fa-plus-circle"></i> Nouvelle note</h2>
             </div>
             <div class="modal-body">
-                <form id="noteForm">
+                <form action="notes.php" method="POST" id="noteForm">
                     <div class="form-group">
                         <label for="noteTitle">Titre *</label>
-                        <input type="text" class="form-input" id="noteTitle" 
-                               placeholder="Donnez un titre à votre note" required>
+                        <input type="text" name="noteTitle" class="form-input" id="noteTitle" 
+                               placeholder="Donnez un titre à votre note">
                     </div>
                     
                     <div class="form-group">
                         <label for="noteTheme">Thème *</label>
-                        <select class="form-input" id="noteTheme" required>
+                        <select name="noteTheme" class="form-input" id="noteTheme">
                             <option value="">Choisir un thème</option>
-                            <option value="productivity">Productivité</option>
-                            <option value="travel">Voyage</option>
-                            <option value="ideas">Idées</option>
-                            <option value="learning">Apprentissage</option>
-                            <option value="personal">Personnel</option>
+                            <?php foreach($themes as $theme): ?>
+                                <option value="<?= $theme['id'] ?>"><?= htmlspecialchars($theme['name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     
@@ -334,32 +227,26 @@ require_once 'includes/header.php';
                                 <i class="far fa-star" data-value="4"></i>
                                 <i class="far fa-star" data-value="5"></i>
                             </div>
-                            <input type="hidden" id="importanceValue" value="3">
+                            <input type="hidden" name="importanceValue" id="importanceValue" value="3">
                             <span id="importanceText">Moyenne (3/5)</span>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="noteContent">Contenu *</label>
-                        <textarea class="form-input form-textarea" id="noteContent" 
-                                  placeholder="Saisissez le contenu de votre note..." required></textarea>
+                        <textarea name="noteContent" class="form-input form-textarea" id="noteContent" 
+                                  placeholder="Saisissez le contenu de votre note..." ></textarea>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="noteTags">Tags (optionnel)</label>
-                        <input type="text" class="form-input" id="noteTags" 
-                               placeholder="Séparés par des virgules (ex: travail, projet, important)">
+                    <div class="modal-footer">
+                        <button type="button" class="btn-filter" onclick="closeModal()">
+                            Annuler
+                        </button>
+                        <button type="button" name="saveNote" class="btn-create" onclick="submitNoteForm()">
+                            <i class="fas fa-check"></i> Enregistrer
+                        </button>
                     </div>
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-filter" onclick="closeModal()">
-                    Annuler
-                </button>
-                <button class="btn-create" onclick="saveNote()">
-                    <i class="fas fa-check"></i> Enregistrer
-                </button>
-            </div>
         </div>
     </div>
 
@@ -401,7 +288,6 @@ require_once 'includes/header.php';
                             <span id="editImportanceText">Moyenne (3/5)</span>
                         </div>
                     </div>
-                    
                     <div class="form-group">
                         <label for="editNoteContent">Contenu *</label>
                         <textarea class="form-input form-textarea" id="editNoteContent" required></textarea>
@@ -450,142 +336,6 @@ require_once 'includes/header.php';
         </div>
     </div>
 
-    <script>
-        // Gestion des modals
-        function openCreateModal() {
-            document.getElementById('createModal').style.display = 'flex';
-            initStars('importanceStars', 'importanceValue', 'importanceText');
-        }
-        
-        function openEditModal(noteId) {
-            // Remplir les champs avec les données de la note
-            document.getElementById('editNoteTitle').value = 'Titre de la note ' + noteId;
-            document.getElementById('editNoteContent').value = 'Contenu de la note ' + noteId;
-            
-            document.getElementById('editModal').style.display = 'flex';
-            initStars('editImportanceStars', 'editImportanceValue', 'editImportanceText');
-        }
-        
-        function openDeleteModal(noteId) {
-            document.getElementById('deleteModal').style.display = 'flex';
-            document.getElementById('deleteModal').dataset.noteId = noteId;
-        }
-        
-        function closeModal() {
-            document.getElementById('createModal').style.display = 'none';
-            document.getElementById('editModal').style.display = 'none';
-            document.getElementById('deleteModal').style.display = 'none';
-        }
-        
-        // Fermer les modals en cliquant en dehors
-        window.onclick = function(event) {
-            const modals = document.querySelectorAll('.modal-overlay');
-            modals.forEach(modal => {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-        }
-        
-        // Gestion des étoiles d'importance
-        function initStars(starsId, valueId, textId) {
-            const stars = document.getElementById(starsId);
-            const valueInput = document.getElementById(valueId);
-            const text = document.getElementById(textId);
-            
-            const starElements = stars.querySelectorAll('.fa-star');
-            
-            starElements.forEach(star => {
-                star.addEventListener('click', function() {
-                    const value = parseInt(this.getAttribute('data-value'));
-                    valueInput.value = value;
-                    
-                    // Mettre à jour l'affichage
-                    starElements.forEach((s, index) => {
-                        if (index < value) {
-                            s.classList.remove('far');
-                            s.classList.add('fas');
-                        } else {
-                            s.classList.remove('fas');
-                            s.classList.add('far');
-                        }
-                    });
-                    
-                    // Mettre à jour le texte
-                    const texts = [
-                        'Très faible (1/5)',
-                        'Faible (2/5)',
-                        'Moyenne (3/5)',
-                        'Importante (4/5)',
-                        'Très importante (5/5)'
-                    ];
-                    text.textContent = texts[value - 1];
-                });
-            });
-            
-            // Initialiser à 3 étoiles
-            if (!valueInput.value || valueInput.value < 1 || valueInput.value > 5) {
-                starElements[2].click();
-            } else {
-                starElements[valueInput.value - 1].click();
-            }
-        }
-        
-        // Gestion des notes
-        function saveNote() {
-            const title = document.getElementById('noteTitle').value;
-            const theme = document.getElementById('noteTheme').value;
-            const content = document.getElementById('noteContent').value;
-            
-            if (!title || !theme || !content) {
-                alert('Veuillez remplir tous les champs obligatoires');
-                return;
-            }
-            
-            // Simulation d'enregistrement
-            alert('Note enregistrée avec succès !');
-            closeModal();
-            document.getElementById('noteForm').reset();
-        }
-        
-        function editNote(noteId) {
-            openEditModal(noteId);
-        }
-        
-        function updateNote() {
-            // Simulation de mise à jour
-            alert('Note mise à jour avec succès !');
-            closeModal();
-        }
-        
-        function deleteNote(noteId) {
-            openDeleteModal(noteId);
-        }
-        
-        function confirmDelete() {
-            const noteId = document.getElementById('deleteModal').dataset.noteId;
-            // Simulation de suppression
-            alert('Note ' + noteId + ' supprimée !');
-            closeModal();
-        }
-        
-        // Gestion des filtres
-        function resetFilters() {
-            document.getElementById('themeFilter').value = '';
-            document.getElementById('importanceFilter').value = '';
-            document.getElementById('searchFilter').value = '';
-            alert('Filtres réinitialisés');
-        }
-        
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fermer les modals avec la touche Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeModal();
-                }
-            });
-        });
-    </script>
+    <script src="public_assets/js/notes.js"></script>
 </body>
 </html>
