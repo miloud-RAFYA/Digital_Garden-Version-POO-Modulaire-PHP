@@ -27,7 +27,7 @@ class UserRepository
             return $stmt->execute([$id]);
         }
         return false;
-    }
+        }
 
     public function userExists($username)
     {

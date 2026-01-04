@@ -11,7 +11,6 @@ class AuthService {
     
     public function authenticate($username, $password) {
         $user = $this->userRepository->findByUsername($username);
-        
         if ($user && ($password === $user['password'] || password_verify($password, $user['password']))) {
             $this->startSession($user);
             $this->redirectUser($user['userRole']);
@@ -31,9 +30,9 @@ class AuthService {
     
     private function redirectUser($role) {
         if ($role === 'admin') {
-            header('Location: ../admin/dashboard.php');
+            header('Location: /Digital_Garden-Version-POO-Modulaire-PHP/admin/dashboard.php');
         } else {
-            header('Location: ../public/dashboard.php');
+            header('Location: /Digital_Garden-Version-POO-Modulaire-PHP/public/dashboard.php');
         }
         exit();
     }
@@ -43,7 +42,7 @@ class AuthService {
             session_start();
         }
         $_SESSION['login_error'] = 'Invalid credentials';
-        header('Location: ../public/login.php');
+        header('Location: /Digital_Garden-Version-POO-Modulaire-PHP/public/login.php');
         exit();
     }
 }

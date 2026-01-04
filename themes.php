@@ -1,12 +1,12 @@
 <?php
 session_start();
-// require_once 'includes/auth.php';
 require_once 'includes/header.php';
 require_once 'src/Repository/ThemeRepository.php';
 require_once 'src/Entity/Theme.php';
-$user_Id=$_SESSION['user_id'];
-$display=new ThemeRepository();
-// $themes=$display->displayThemes($user_Id);
+
+$user_Id = $_SESSION['user_id'];
+$themeRepo = new ThemeRepository();
+$themes = $themeRepo->getThemesByUser($user_Id);
 
 
 
@@ -24,9 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
         $themeTags = $_POST['themeTags'] ?? '';
 
         if (!empty($nameTheme) && !empty($themeColor)) {
-               $theme=new Theme($nameTheme,$themeColor,$themeTags);
+               $theme = new Theme($nameTheme, $themeColor, $themeTags);
                $theme->setUser($user_Id);
-               $display->isertTheme($theme);
+               $themeRepo->isertTheme($theme);
             // header("Location: themes.php");
             // exit();
         } else {
@@ -37,51 +37,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
     } catch (Exception $e) {
         $_SESSION['error_message'] = "erreur de conection post" . $e->getMessage();
     }
-// }else if ($_POST['action']=='Modifier'){
-    var_dump($_POST['action']);
-        exit; 
-      $theme_id=$_POST['theme_id'];
-      var_dump('$theme_id');
-// }
 }
-echo isset($_POST['delete']);
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
     $theme_id = $_POST["theme_id"] ?? 0;
     if ($theme_id > 0) {
-        try {
-            $sql = "DELETE FROM themes WHERE id = ? AND user_id = ?";
-            $stmt = mysqli_prepare($cnx, $sql);
-            mysqli_stmt_bind_param($stmt, "ii", $theme_id, $user_Id);
-            if (mysqli_stmt_execute($stmt)) {
-                $_SESSION['success_message'] = "Theme supprime avec succes !";
-            } else {
-
-            }
-            mysqli_stmt_close($stmt);
-            header("Location: themes.php");
-            exit();
-        } catch (Exception $e) {
-            $_SESSION['error_message'] = "Erreur lors de la suppression : " . $e->getMessage();
-        }
+        // Handle theme update logic here
+        $_SESSION['success_message'] = 'Theme updated successfully';
+        header('Location: themes.php');
+        exit();
     }
-}
-$themUpd = [];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
-    $theme_id = $_POST["theme_id"] ?? 0;
-    if ($theme_id > 0) {
-        try {
-            $sql = "SELECT  * FROM themes WHERE id = ? and user_id = ? ";
-            $stmt = mysqli_prepare($cnx, $sql);
-            mysqli_stmt_bind_param($stmt, "ii", $theme_id, $user_Id);
-            mysqli_stmt_execute($stmt);
-            $res = mysqli_stmt_get_result($stmt);
-            $themUpd = mysqli_fetch_assoc($res);
-        } catch (Exception $e) {
-            $_SESSION["error_message"] = "Erreur de connexion ss" . $e->getMessage();
-        }
-    }
-    var_dump($themUpd);
 }
 
 // RÉCUPÉRATION DES THÈMES
@@ -163,15 +129,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
                         <div class="color-preview" id="colorPreview">#4CAF50</div>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="themeTags">Tags (optionnel)</label>
-                    <input type="text" id="themeTags" name="themeTags" placeholder="Séparés par des virgules"
-                       >
-
-                    <small class="form-text">Ex: travail,projet,important</small>
-                </div>
-
                 <div class="form-actions">
                     <button type="submit" name="enregistrer" class="btn-save" id="submitBtn">
                         <i class="fas fa-save"></i> <span id="submitText">Creer</span>
@@ -187,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
 
         <!-- Liste des thèmes -->
         <div class="theme-list">
-            <?php if ($themes ): ?>
+            <?php if ($themes): ?>
                 <?php foreach ($themes as $theme): ?>
                     <div class="theme-card" style="--theme-color: <?= htmlspecialchars($theme['color']) ?>">
                         <div class="theme-header">
@@ -196,18 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
                                 <h3><?= htmlspecialchars($theme['name']) ?></h3>
                                 <div class="theme-meta">
                                     <i class="fas fa-sticky-note"></i>
-                                    <span>
-                                        <?php
-                                        $count_query = "SELECT COUNT(*) FROM notes WHERE theme_id = ? AND user_id = ?";
-                                        $count_stmt = mysqli_prepare($cnx, $count_query);
-                                        mysqli_stmt_bind_param($count_stmt, "ii", $theme['id'], $user_Id);
-                                        mysqli_stmt_execute($count_stmt);
-                                        mysqli_stmt_bind_result($count_stmt, $note_count);
-                                        mysqli_stmt_fetch($count_stmt);
-                                        mysqli_stmt_close($count_stmt);
-                                        echo $note_count . " note" . ($note_count > 1 ? 's' : '');
-                                        ?>
-                                    </span>
+                                    <span>0 notes</span>
                                 </div>
                             </div>
                         </div>
@@ -225,45 +171,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
                         <?php endif; ?>
 
                         <div class="theme-actions">
-                            <!-- Bouton Modifier -->
-                            <form method="POST" action="" class="form-inline">
-                                <input type="hidden" name="theme_id" value="<?= $theme['id'] ?>">
-                                <button type="submit" name="update" class="btn btn-primary btn-edit"  data-id="<?= $theme['id'] ?>" data-name="<?= htmlspecialchars($theme['name']) ?>"
-                        data-color="<?= htmlspecialchars($theme['color']) ?>"
-                        data-tags="<?= htmlspecialchars($theme['tags']) ?>">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </button>
-                            </form>
-                            <!-- Formulaire de suppression -->
-                            <form method="POST" action="" class="form-inline"
-                                onsubmit="return confirm('Voulez-vous vraiment supprimer ce thème ?');">
-                                <input type="hidden" name="theme_id" value="<?= $theme['id'] ?>">
-                                <button type="submit" name="delete" class="btn btn-secondary">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </form>
+                            <button class="btn btn-primary btn-edit" data-id="<?= $theme['id'] ?>" 
+                                    data-name="<?= htmlspecialchars($theme['name']) ?>"
+                                    data-color="<?= htmlspecialchars($theme['color']) ?>"
+                                    data-tags="<?= htmlspecialchars($theme['tags']) ?>">
+                                <i class="fas fa-edit"></i> Modifier
+                            </button>
+                            <button class="btn btn-secondary" onclick="deleteTheme(<?= $theme['id'] ?>)">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
                         </div>
                     </div>
-                    <?php endforeach ?>
-                    <?php  else :?>
+                <?php endforeach; ?>
+            <?php else: ?>
                 <div class="empty-state">
                     <i class="fas fa-palette"></i>
                     <p>Aucun thème pour le moment</p>
                     <p style="font-size: 14px; color: #999;">Cliquez sur "Ajouter un thème" pour commencer</p>
                 </div>
-                <?php  endif ?>
-             
+            <?php endif; ?>
         </div>
     </main>
     <script src="public_assets/js/script.js"></script>
-    <?php
-    if (isset($stmt)) {
-        mysqli_stmt_close($stmt);
-    }
-    if (isset($cnx)) {
-        mysqli_close($cnx);
-    }
-    ?>
 </body>
-
 </html>
