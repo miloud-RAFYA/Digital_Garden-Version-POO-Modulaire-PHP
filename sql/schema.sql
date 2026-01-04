@@ -53,7 +53,27 @@ CREATE TABLE notes (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (theme_id) REFERENCES themes(id) ON DELETE CASCADE
 );
+-- Insertion des notes
 
+-- Note 1 : Pour le thème "Jardin Méditerranéen" (ID 1, utilisateur 1)
+INSERT INTO notes (theme_id, title, importance, content) VALUES
+(1, 'Plantes aromatiques essentielles', 4, 'Liste des plantes aromatiques pour un jardin méditerranéen : romarin, thym, lavande, sauge. Elles résistent bien à la sécheresse et embaument le jardin.');
+
+-- Note 2 : Pour le thème "Potager Urbain" (ID 2, utilisateur 1)
+INSERT INTO notes (theme_id, title, importance, content) VALUES
+(2, 'Optimisation espace balcon', 5, 'Techniques pour maximiser la production sur un petit balcon : jardinières verticales, pots empilables, treillis pour tomates et concombres.');
+
+-- Note 3 : Pour le thème "Roses Anglaises" (ID 4, utilisateur 2)
+INSERT INTO notes (theme_id, title, importance, content) VALUES
+(4, 'Calendrier de taille des roses', 3, 'Taille principale en mars après les gelées. Taille légère en été pour encourager la floraison. Supprimer les fleurs fanées régulièrement.');
+
+-- Note 4 : Pour le thème "Cactus & Succulentes" (ID 6, utilisateur 3)
+INSERT INTO notes (theme_id, title, importance, content) VALUES
+(6, 'Arrosage en hiver', 4, 'Réduire l\'arrosage à une fois par mois en hiver. Les cactus entrent en dormance. Éviter l\'eau stagnante dans les soucoupes.');
+
+-- Note 5 : Pour le thème "Forêt Comestible" (ID 8, utilisateur 4)
+INSERT INTO notes (theme_id, title, importance, content) VALUES
+(8, 'Stratification verticale', 5, 'Organiser la forêt comestible en 7 étages : grands arbres, petits arbres, arbustes, herbacées, couvre-sol, racines, grimpantes.');
 CREATE TABLE role (
     id INT PRIMARY KEY,
     userRole varchar(10) DEFAULT 'user',  

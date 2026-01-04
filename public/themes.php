@@ -1,10 +1,10 @@
 <?php
 session_start();
 // require_once 'includes/auth.php';
-require_once 'includes/header.php';
-require_once 'src/Repository/ThemeRepository.php';
-require_once 'src/Service/TeamService.php';
-require_once 'src/Entity/Theme.php';
+require_once '../includes/header.php';
+require_once '../src/Repository/ThemeRepository.php';
+require_once '../src/Service/TeamService.php';
+require_once '../src/Entity/Theme.php';
 $display=new ThemeRepository();
 // $themes=$display->displayThemes($user_Id);
 $team=new TeamService();
@@ -68,22 +68,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
 }
 $themUpd = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
-    $theme_id = $_SESSION["theme_id"] ?? 0;
-    if ($theme_id > 0) {
-        try {
-            $sql = "SELECT  * FROM themes WHERE id = ? and user_id = ? ";
-            $stmt = mysqli_prepare($cnx, $sql);
-            mysqli_stmt_bind_param($stmt, "ii", $theme_id, $user_Id);
-            mysqli_stmt_execute($stmt);
-            $res = mysqli_stmt_get_result($stmt);
-            $themUpd = mysqli_fetch_assoc($res);
-        } catch (Exception $e) {
-            $_SESSION["error_message"] = "Erreur de connexion ss" . $e->getMessage();
-        }
-    }
-    var_dump($themUpd);
-}
+// if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
+//     $theme_id = $_SESSION["theme_id"] ?? 0;
+//     if ($theme_id > 0) {
+//         try {
+//             $sql = "SELECT  * FROM themes WHERE id = ? and user_id = ? ";
+//             $stmt = mysqli_prepare($cnx, $sql);
+//             mysqli_stmt_bind_param($stmt, "ii", $theme_id, $user_Id);
+//             mysqli_stmt_execute($stmt);
+//             $res = mysqli_stmt_get_result($stmt);
+//             $themUpd = mysqli_fetch_assoc($res);
+//         } catch (Exception $e) {
+//             $_SESSION["error_message"] = "Erreur de connexion ss" . $e->getMessage();
+//         }
+//     }
+//     var_dump($themUpd);
+// }
 
 // RÉCUPÉRATION DES THÈMES
 // try {
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
 </head>
 
 <body>
-    <?php require_once 'includes/header.php'; ?>
+    <?php require_once '../includes/header.php'; ?>
 
     <main class="page">
         <div class="page-header">
@@ -189,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
         <!-- Liste des thèmes -->
           <?php $team->displayTeam($user_Id);?>
     </main>
-    <script src="public_assets/js/script.js"></script>
+    <script src="../public_assets/js/script.js"></script>
     <?php
     if (isset($stmt)) {
         mysqli_stmt_close($stmt);

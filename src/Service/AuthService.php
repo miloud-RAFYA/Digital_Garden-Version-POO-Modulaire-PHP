@@ -34,6 +34,7 @@ class AuthService
         $_SESSION['fName'] = $user['fName'];
         $_SESSION['password'] = $user['password'];
         $_SESSION['date_inscription'] = $user['created_at'];
+        $_SESSION['login_time']=date("d/m/Y H:i:s");
     }
 
     private function redirectUser($role)

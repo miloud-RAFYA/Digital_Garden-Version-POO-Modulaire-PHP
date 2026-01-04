@@ -31,9 +31,24 @@ class TeamService
             <div class="theme-list">
                 <?php if ($teams): ?>
                     <?php foreach ($teams as $theme): ?>
+                        
                         <div class="theme-card" style="--theme-color: <?= htmlspecialchars($theme['color']) ?>">
                             <div class="theme-header">
-                                <div class="theme-color" style="background: <?= htmlspecialchars($theme['color']) ?>"></div>
+                                <form action="notes.php" method="POST">
+                                    <input type="hidden" name="theme_id" value="<?= $theme['id'] ?>">
+                                    <button type="submit" name="note" id="form-note">
+                                        <div class="theme-color" style="background: <?= htmlspecialchars($theme['color']) ?>"></div>
+                                    </button>
+                                </form>
+                                <style>
+                                    #form-note {
+                                        background-color: white !important;     
+                                        color: black;
+                                        cursor: pointer;
+                                        padding: 0;
+                                        margin: 0;
+                                    }
+                                </style>
                                 <div class="theme-info">
                                     <h3><?= htmlspecialchars($theme['name']) ?></h3>
                                     <div class="theme-meta">
@@ -62,7 +77,7 @@ class TeamService
                                 <form method="POST" action="" class="form-inline">
                                     <input type="hidden" name="theme_id" value="<?= $theme['id'] ?>">
                                     <button type="submit" name="update" class="btn btn-primary btn-edit"
-                                        <?php $_SESSION["theme_id"]=$theme['id'] ?>
+                                        <?php $_SESSION["theme_id"] = $theme['id'] ?>
                                         data-name="<?= htmlspecialchars($theme['name']) ?>"
                                         data-color="<?= htmlspecialchars($theme['color']) ?>"
                                         data-tags="<?= htmlspecialchars($theme['tags']) ?>">
@@ -89,7 +104,7 @@ class TeamService
                 <?php endif ?>
 
             </div>
-            
+
 <?php }
     }
 }
