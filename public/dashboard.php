@@ -18,12 +18,11 @@ require_once '../includes/header.php';
     <div class="dashboard">
         <main class="info-dashboard">
             <h3>Bienvenue, <?= htmlspecialchars($_SESSION['username']) ?></h3>
-            <p>Inscrit le : <?= $_SESSION['date_inscription'] ?></p>
-            <p>Connecté à : <?= $_SESSION['login_time'] ?></p>
+            <p>Role: <?= htmlspecialchars($_SESSION['role']) ?></p>
         </main>
     </div>
     <?php
-    require_once 'includes/footer.php';
+    require_once '../includes/footer.php';
     ?>
 </body>
 

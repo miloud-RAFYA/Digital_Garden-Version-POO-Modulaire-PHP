@@ -37,6 +37,15 @@ header {
   top: 0;
   z-index: 1000;
 }
+#form-note {
+    background-color: white;
+    border: none;          /* اختياري */
+    padding: 0;            /* إذا أردته بدون فراغ */
+}
+
+#form-note:hover {
+    background-color: #f5f5f5; /* لون عند المرور بالماوس */
+}
 
 .logo {
   display: flex;
@@ -2193,3 +2202,12 @@ select:focus {
     border-color: #404055;
   }
 }
+button#form-note {
+  background: white !important;   
+  box-shadow: none;
+  padding: 0;
+  width: auto;
+}
+
+
+
