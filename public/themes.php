@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once 'includes/header.php';
-require_once 'src/Repository/ThemeRepository.php';
-require_once 'src/Service/TeamService.php';
-require_once 'src/Entity/Theme.php';
-
-$user_Id = $_SESSION['user_id'];
-$themeRepo = new ThemeRepository();
-$themes = $themeRepo->getThemesByUser($user_Id);
+// require_once 'includes/auth.php';
+require_once '../includes/header.php';
+require_once '../src/Repository/ThemeRepository.php';
+require_once '../src/Service/TeamService.php';
+require_once '../src/Entity/Theme.php';
+$display=new ThemeRepository();
+// $themes=$display->displayThemes($user_Id);
+$team=new TeamService();
 
 $user_Id= $_SESSION['user_id'];
 
@@ -25,11 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
         $themeTags = $_POST['themeTags'] ?? '';
 
         if (!empty($nameTheme) && !empty($themeColor)) {
-               $theme = new Theme($nameTheme, $themeColor, $themeTags);
+               $theme=new Theme($nameTheme,$themeColor,$themeTags);
                $theme->setUser($user_Id);
-               $themeRepo->isertTheme($theme);
-            // header("Location: themes.php");
-            // exit();
+               $display->isertTheme($theme);
+            header("Location: themes.php");
+            exit();
         } else {
             $_SESSION['error_message'] = "Veuillez remplir tous les champs obligatoires";
             header("Location: themes.php");
@@ -38,18 +38,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['enregistrer']) ) {
     } catch (Exception $e) {
         $_SESSION['error_message'] = "erreur de conection post" . $e->getMessage();
     }
+}elseif($_POST['action']=='Modifier'){
+
+      $theme_id = $_POST["theme_id"] ?? 0;
+      var_dump($theme_id);
+
 }
-
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
+}
+echo isset($_POST['delete']);
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
     $theme_id = $_POST["theme_id"] ?? 0;
     if ($theme_id > 0) {
-        // Handle theme update logic here
-        $_SESSION['success_message'] = 'Theme updated successfully';
-        header('Location: themes.php');
-        exit();
+        try {
+            $sql = "DELETE FROM themes WHERE id = ? AND user_id = ?";
+            $stmt = mysqli_prepare($cnx, $sql);
+            mysqli_stmt_bind_param($stmt, "ii", $theme_id, $user_Id);
+            if (mysqli_stmt_execute($stmt)) {
+                $_SESSION['success_message'] = "Theme supprime avec succes !";
+            } else {
+
+            }
+            mysqli_stmt_close($stmt);
+            header("Location: themes.php");
+            exit();
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = "Erreur lors de la suppression : " . $e->getMessage();
+        }
     }
 }
+$themUpd = [];
+
+// if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update']) ) {
+//     $theme_id = $_SESSION["theme_id"] ?? 0;
+//     if ($theme_id > 0) {
+//         try {
+//             $sql = "SELECT  * FROM themes WHERE id = ? and user_id = ? ";
+//             $stmt = mysqli_prepare($cnx, $sql);
+//             mysqli_stmt_bind_param($stmt, "ii", $theme_id, $user_Id);
+//             mysqli_stmt_execute($stmt);
+//             $res = mysqli_stmt_get_result($stmt);
+//             $themUpd = mysqli_fetch_assoc($res);
+//         } catch (Exception $e) {
+//             $_SESSION["error_message"] = "Erreur de connexion ss" . $e->getMessage();
+//         }
+//     }
+//     var_dump($themUpd);
+// }
 
 // RÉCUPÉRATION DES THÈMES
 // try {
@@ -81,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
 </head>
 
 <body>
-    <?php require_once 'includes/header.php'; ?>
+    <?php require_once '../includes/header.php'; ?>
 
     <main class="page">
         <div class="page-header">
@@ -130,6 +164,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
                         <div class="color-preview" id="colorPreview">#4CAF50</div>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="themeTags">Tags (optionnel)</label>
+                    <input type="text" id="themeTags" name="themeTags" placeholder="Séparés par des virgules"
+                       >
+
+                    <small class="form-text">Ex: travail,projet,important</small>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" name="enregistrer" class="btn-save" id="submitBtn">
                         <i class="fas fa-save"></i> <span id="submitText">Creer</span>
@@ -144,55 +187,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         </div>
 
         <!-- Liste des thèmes -->
-        <div class="theme-list">
-            <?php if ($themes): ?>
-                <?php foreach ($themes as $theme): ?>
-                    <div class="theme-card" style="--theme-color: <?= htmlspecialchars($theme['color']) ?>">
-                        <div class="theme-header">
-                            <div class="theme-color" style="background: <?= htmlspecialchars($theme['color']) ?>"></div>
-                            <div class="theme-info">
-                                <h3><?= htmlspecialchars($theme['name']) ?></h3>
-                                <div class="theme-meta">
-                                    <i class="fas fa-sticky-note"></i>
-                                    <span>0 notes</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <?php if (!empty($theme['tags'])): ?>
-                            <div class="theme-tags">
-                                <?php
-                                $tags = explode(',', $theme['tags']);
-                                foreach ($tags as $tag):
-                                    if (trim($tag)): ?>
-                                        <span class="tag"><?= htmlspecialchars(trim($tag)) ?></span>
-                                    <?php endif;
-                                endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="theme-actions">
-                            <button class="btn btn-primary btn-edit" data-id="<?= $theme['id'] ?>" 
-                                    data-name="<?= htmlspecialchars($theme['name']) ?>"
-                                    data-color="<?= htmlspecialchars($theme['color']) ?>"
-                                    data-tags="<?= htmlspecialchars($theme['tags']) ?>">
-                                <i class="fas fa-edit"></i> Modifier
-                            </button>
-                            <button class="btn btn-secondary" onclick="deleteTheme(<?= $theme['id'] ?>)">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="empty-state">
-                    <i class="fas fa-palette"></i>
-                    <p>Aucun thème pour le moment</p>
-                    <p style="font-size: 14px; color: #999;">Cliquez sur "Ajouter un thème" pour commencer</p>
-                </div>
-            <?php endif; ?>
-        </div>
+          <?php $team->displayTeam($user_Id);?>
     </main>
-    <script src="public_assets/js/script.js"></script>
+    <script src="../public_assets/js/script.js"></script>
+    <?php
+    if (isset($stmt)) {
+        mysqli_stmt_close($stmt);
+    }
+    if (isset($cnx)) {
+        mysqli_close($cnx);
+    }
+    ?>
 </body>
+
 </html>
