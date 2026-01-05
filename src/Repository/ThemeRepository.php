@@ -11,21 +11,31 @@ class ThemeRepository
         $this->conn = $db->getConnection();
     }
 
-    public function isertTheme($theme)
+    public function IsertTheme(Theme $theme)
     {
         try {
             $sql = "INSERT INTO themes (user_id, name, color, tags) VALUES (?, ?, ?, ?)";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([$theme->user, $theme->name, $theme->color, $theme->tags]);
-            $_SESSION['success_message'] = "Theme cree avec succes !";
+            if ($stmt->execute([ $theme->user,$theme->name,$theme->color,$theme->tags])) {
+                $_SESSION['success_message'] = "Theme cree avec succes !";
+            } else {
+                $_SESSION['error_message'] = "Erreur lors de la creation : ";
+            }
         } catch (PDOException $e) {
-            $_SESSION['error_message'] = "Erreur lors de la creation : " . $e->getMessage();
+            echo "error" . $e->getMessage();
         }
     }
-    public function getThemesByUser($userId) {
-        $stmt = $this->conn->prepare("SELECT * FROM themes WHERE user_id = ?");
-        $stmt->execute([$userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function SelectedTeams($user_Id)
+    {
+        try {
+            $stmt = $this->conn->prepare("SELECT * FROM themes WHERE user_id = ?");
+            $stmt->execute([$user_Id]);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = "Erreur de connexion " . $e->getMessage();
+            return $result = false;
+        }
     }
-
 }
+
