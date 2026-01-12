@@ -10,11 +10,9 @@ class NoteService
     {
         $this->NoteRepository = new NoteRepository();
     }
-
-    public function displayNote($theme_id)
+    public function card($notes)
     {
-        $notes = $this->NoteRepository->SelectedNote($theme_id); ?>
-        
+?>
         <div class="theme-list">
             <?php if ($notes && count($notes) > 0): ?>
                 <?php foreach ($notes as $note): ?>
@@ -24,7 +22,7 @@ class NoteService
                                 <h3><?= htmlspecialchars($note['title']) ?></h3>
                                 <div class="note-meta">
                                     <span class="note-theme" style="color: <?= $note['theme_color'] ?? '#4CAF50' ?>;">
-                                        <?= htmlspecialchars($note['theme_name']) ?>
+                                        <?= htmlspecialchars($note['name']) ?>
                                     </span>
                                     <span class="note-date">
                                         <i class="far fa-calendar"></i> <?= date('d/m/Y', strtotime($note['created_at'])) ?>
@@ -44,7 +42,13 @@ class NoteService
                                     title="Modifier">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                
+                                <form action="notes.php" method="post" class="archive-form">
+                                    <input type="hidden" name="id" value="<?= $note['id'] ?>">
+                                    <button type="submit" class="btn-note-action archive" name="Archiver">
+                                        <i class="fas fa-archive"></i>
+                                    </button>
+                                </form>
+
                                 <button
                                     class="btn-note-action delete"
                                     onclick="confirmDelete(<?= $note['id'] ?>)"
@@ -59,8 +63,8 @@ class NoteService
                         <div class="note-footer">
                             <div class="note-importance">
                                 <?php for ($i = 1; $i <= 5; $i++): ?>
-                                    <i class="<?= $i <= $note['importance'] ? 'fas' : 'far' ?> fa-star" 
-                                       style="color: <?= $i <= $note['importance'] ? '#FF9800' : '#ccc' ?>;"></i>
+                                    <i class="<?= $i <= $note['importance'] ? 'fas' : 'far' ?> fa-star"
+                                        style="color: <?= $i <= $note['importance'] ? '#FF9800' : '#ccc' ?>;"></i>
                                 <?php endfor; ?>
                                 <span style="color: #666; margin-left: 5px;"><?= $note['importance'] . "/5" ?></span>
                             </div>
@@ -75,11 +79,15 @@ class NoteService
                 </div>
             <?php endif ?>
         </div>
-        
-        <?php
+<?php }
+
+    public function displayNote($theme_id)
+    {
+        $notes = $this->NoteRepository->SelectedNote($theme_id);
+        $this->card($notes);
     }
 
-    public function createNote($data,$theme_id)
+    public function createNote($data, $theme_id)
     {
         try {
             $note = new Note(
@@ -88,26 +96,25 @@ class NoteService
                 $data['content'] ?? '',
                 $theme_id ?? null
             );
-          
+
             $result = $this->NoteRepository->create($note);
-            
+
             if ($result) {
                 $_SESSION['success_message_note'] = "Note créée avec succès !";
                 header("location: notes.php");
                 exit();
             } else {
                 $_SESSION['error_message_note'] = "Erreur lors de la création de la note";
-                 header("location: notes.php");
+                header("location: notes.php");
                 exit();
             }
-            
         } catch (Exception $e) {
             $_SESSION['error_message'] = "Erreur: " . $e->getMessage();
             return false;
         }
     }
 
-    public function updateNote($data,$theme_id)
+    public function updateNote($data, $theme_id)
     {
         try {
             $result = $this->NoteRepository->update([
@@ -117,7 +124,7 @@ class NoteService
                 'content' => $data['content'] ?? '',
                 'theme_id' => $theme_id ?? null
             ]);
-            
+
             if ($result) {
                 $_SESSION['success_message_note'] = "Note modifiée avec succès !";
                 return true;
@@ -125,7 +132,6 @@ class NoteService
                 $_SESSION['error_message_note'] = "Erreur lors de la modification de la note";
                 return false;
             }
-            
         } catch (Exception $e) {
             $_SESSION['error_message'] = "Erreur: " . $e->getMessage();
             return false;
@@ -136,7 +142,7 @@ class NoteService
     {
         try {
             $result = $this->NoteRepository->delete($noteId);
-            
+
             if ($result) {
                 $_SESSION['success_message'] = "Note supprimée avec succès !";
                 return true;
@@ -144,22 +150,24 @@ class NoteService
                 $_SESSION['error_message'] = "Erreur lors de la suppression de la note";
                 return false;
             }
-            
         } catch (Exception $e) {
             $_SESSION['error_message'] = "Erreur: " . $e->getMessage();
             return false;
         }
     }
 
+    public function search($motcle, $theme_id)
+    {
+        $results = $this->NoteRepository->search($motcle, $theme_id);
+
+        $this->card($results);
+    }
     public function getNoteById($noteId)
     {
         return $this->NoteRepository->findById($noteId);
     }
 
-    public function getStats()
-    {
-        return $this->NoteRepository->getStats();
-    }
+    
 
     public function getNotesByTheme($themeId)
     {

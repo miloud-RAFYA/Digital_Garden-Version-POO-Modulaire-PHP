@@ -7,7 +7,7 @@ class User{
     private $password ;
     private $created_at ;
     private $Team =[];
-    private role $role;
+    private  $role;
     public function __construct($username,$password){
             $this->username=$username;
             $this->password=$password;
