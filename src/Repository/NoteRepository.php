@@ -2,23 +2,26 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../Entity/Note.php';
 
-class NoteRepository {
+class NoteRepository
+{
     private $conn;
 
-    public function __construct() {
+    public function __construct()
+    {
         $db = new Database();
         $this->conn = $db->getConnection();
     }
 
-    public function create(Note $note) {
+    public function create(Note $note)
+    {
         try {
             $sql = "INSERT INTO notes (theme_id, title, importance, content, created_at) 
                     VALUES (:theme_id, :title, :importance, :content, NOW())";
-            
+
             $stmt = $this->conn->prepare($sql);
-            
+
             $data = $note->toArray();
-            
+
             $result = $stmt->execute([
                 ':theme_id' => $data['theme_id'],
                 ':title' => $data['title'],
@@ -31,14 +34,14 @@ class NoteRepository {
                 return true;
             }
             return false;
-            
         } catch (PDOException $e) {
             error_log("Erreur création note: " . $e->getMessage());
             return false;
         }
     }
 
-    public function update($noteData) {
+    public function update($noteData)
+    {
         try {
             $sql = "UPDATE notes 
                     SET title = :title, 
@@ -47,9 +50,9 @@ class NoteRepository {
                         theme_id = :theme_id,
                         created_at = NOW()
                     WHERE id = :id";
-            
+
             $stmt = $this->conn->prepare($sql);
-            
+
             $result = $stmt->execute([
                 ':id' => $noteData['id'],
                 ':title' => $noteData['title'],
@@ -59,105 +62,99 @@ class NoteRepository {
             ]);
 
             return $result;
-            
         } catch (PDOException $e) {
             error_log("Erreur modification note: " . $e->getMessage());
             return false;
         }
     }
 
-    public function delete($noteId) {
+    public function delete($noteId)
+    {
         try {
             $sql = "DELETE FROM notes WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
-            
             $result = $stmt->execute([':id' => $noteId]);
-
             return $result;
-            
         } catch (PDOException $e) {
             error_log("Erreur suppression note: " . $e->getMessage());
             return false;
         }
     }
+    public function search($motcle, $theme_id)
+    {
+        $stmt = $this->conn->prepare("
+        SELECT *
+        FROM notes n
+        JOIN themes t ON n.theme_id = t.id
+        WHERE (n.title LIKE :motcle 
+        OR n.content LIKE :motcle)
+        AND t.id = :theme_id
+        ORDER BY n.created_at DESC;
 
-    public function findById($noteId) {
+    ");
+
+        $stmt->execute([
+            ':motcle' => '%' . $motcle . '%',
+            ':theme_id' =>  $theme_id
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findById($noteId)
+    {
         try {
-            $sql = "SELECT n.*, t.name as theme_name 
+            $sql = "SELECT * 
                     FROM notes n 
                     LEFT JOIN themes t ON n.theme_id = t.id 
                     WHERE n.id = :id";
-            
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':id' => $noteId]);
-            
+
             return $stmt->fetch(PDO::FETCH_ASSOC);
-            
         } catch (PDOException $e) {
             error_log("Erreur recherche note: " . $e->getMessage());
             return false;
         }
     }
 
-    public function SelectedNote($theme_id) {
+    public function SelectedNote($theme_id)
+    {
         try {
-            $sql = "SELECT n.*, t.name as theme_name, t.color as theme_color 
+            $sql = "SELECT * 
                     FROM notes n 
                     LEFT JOIN themes t ON n.theme_id = t.id 
                     WHERE n.theme_id = :theme_id
+                    and n.status ='active'
                     ORDER BY n.created_at DESC";
-            
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([':theme_id' => $theme_id]);
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
         } catch (PDOException $e) {
             error_log("Erreur sélection notes: " . $e->getMessage());
             return [];
         }
     }
 
-    public function getAllNotes() {
+    public function getAllNotes()
+    {
         try {
             $sql = "SELECT n.*, t.name as theme_name, t.color as theme_color 
                     FROM notes n 
                     LEFT JOIN themes t ON n.theme_id = t.id 
                     ORDER BY n.created_at DESC";
-            
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            
+
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
         } catch (PDOException $e) {
             error_log("Erreur récupération notes: " . $e->getMessage());
             return [];
         }
     }
 
-    public function getStats() {
-        try {
-            $sql = "SELECT 
-                    COUNT(*) as total_notes,
-                    SUM(CASE WHEN importance >= 4 THEN 1 ELSE 0 END) as important_notes,
-                    SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as weekly_notes,
-                    COUNT(DISTINCT theme_id) as active_themes
-                    FROM notes";
-            
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute();
-            
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-            
-        } catch (PDOException $e) {
-            error_log("Erreur statistiques notes: " . $e->getMessage());
-            return [
-                'total_notes' => 0,
-                'important_notes' => 0,
-                'weekly_notes' => 0,
-                'active_themes' => 0
-            ];
-        }
-    }
+ 
 }

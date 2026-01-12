@@ -22,7 +22,20 @@ class TeamService
     //     mysqli_stmt_close($count_stmt);
     //     echo $note_count . " note" . ($note_count > 1 ? 's' : '');
     //     
-
+    public function updateTheme($theme){
+         $this->TeamRepository->update($theme);
+    }
+    public function deleteTheme($themeId,$userId){
+         if ($themeId > 0) {
+            $this->TeamRepository->delete($themeId,$userId);
+        } 
+    }
+    public function insertTheme($theme){
+        
+            $this->TeamRepository->Insert($theme);
+        
+    }
+    
     public function displayTeam($user_id)
     {
         //  $user_id=$_SESSION['user_id'];
@@ -31,7 +44,7 @@ class TeamService
             <div class="theme-list">
                 <?php if ($teams): ?>
                     <?php foreach ($teams as $theme): ?>
-                        
+
                         <div class="theme-card" style="--theme-color: <?= htmlspecialchars($theme['color']) ?>">
                             <div class="theme-header">
                                 <form action="notes.php" method="POST">
@@ -42,7 +55,7 @@ class TeamService
                                 </form>
                                 <style>
                                     #form-note {
-                                        background-color: white !important;     
+                                        background-color: white !important;
                                         color: black;
                                         cursor: pointer;
                                         padding: 0;
@@ -76,8 +89,9 @@ class TeamService
                                 <!-- Bouton Modifier -->
                                 <form method="POST" action="" class="form-inline">
                                     <input type="hidden" name="theme_id" value="<?= $theme['id'] ?>">
-                                    <button type="submit" name="update" class="btn btn-primary btn-edit"
-                                        <?php $_SESSION["theme_id"] = $theme['id'] ?>
+                                    <button type="button"
+                                        class="btn btn-primary btn-edit"
+                                        data-id="<?= $theme['id'] ?>"
                                         data-name="<?= htmlspecialchars($theme['name']) ?>"
                                         data-color="<?= htmlspecialchars($theme['color']) ?>"
                                         data-tags="<?= htmlspecialchars($theme['tags']) ?>">

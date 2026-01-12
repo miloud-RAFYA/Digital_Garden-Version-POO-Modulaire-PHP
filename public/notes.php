@@ -4,32 +4,32 @@ require_once '../includes/header.php';
 require_once '../src/Service/NoteService.php';
 
 $noteService = new NoteService();
+$motcle = null;
+if (isset($_GET['motcle']) && trim($_GET['motcle']) !== '') {
+    $motcle = trim($_GET['motcle']);
+}
 
-if (isset($_POST['theme_id']) && !empty($_POST['theme_id'])) {  
-$_SESSION['theme_id'] = $_POST['theme_id'];
+
+if (isset($_POST['theme_id']) && !empty($_POST['theme_id'])) {
+    $_SESSION['theme_id'] = $_POST['theme_id'];
 }
 $theme_id = $_SESSION['theme_id'];
 
-// Traitement des actions
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Création
+
     if (isset($_POST['create'])) {
+        $noteService->createNote($_POST, $theme_id);
+    } elseif (isset($_POST['update'])) {
         
-        $noteService->createNote($_POST,$theme_id);
-    }
-    // Modification
-    elseif (isset($_POST['update'])) {
-        var_dump($theme_id);
-        $noteService->updateNote($_POST,$theme_id);
-    }
-    // Suppression
-    elseif (isset($_POST['delete'])) {
+        $noteService->updateNote($_POST, $theme_id);
+    } elseif (isset($_POST['delete'])) {
         $noteService->deleteNote($_POST['note_id']);
+    }elseif(isset($_POST['Archiver'])){
+        var_dump($_POST['id']);
     }
 }
 
-// Récupérer les statistiques
-$stats = $noteService->getStats();
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +45,7 @@ $stats = $noteService->getStats();
 
 <body>
 
-    <main class="page">
+    <main class="page ">
         <!-- En-tête -->
         <div class="page-header">
             <div>
@@ -60,10 +60,37 @@ $stats = $noteService->getStats();
         </div>
 
         <!-- Statistiques -->
-        
+        <form method="GET" action="notes.php"> <!-- Recherche -->
+            <div class="filters-bar">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="importanceFilter">Importance</label>
+                        <select class="filter-select" id="importanceFilter">
+                            <option value="">Tous les niveaux</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="1">⭐</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="searchFilter">Recherche</label>
+                        <input type="text" name="motcle" value="<?php echo isset($_GET['motcle']) ? htmlspecialchars($_GET['motcle']) : ''; ?>" placeholder="Tapez et appuyez sur Entrée">
+                    </div>
+
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button class="btn-filter" onclick="resetFilters()">
+                            <i class="fas fa-redo"></i> Réinitialiser
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
         <!-- Filtres -->
-       
-         <!-- Afficher les messages -->
+
+        <!-- Afficher les messages -->
         <?php if (isset($_SESSION['success_message_note'])): ?>
             <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i>
@@ -81,11 +108,13 @@ $stats = $noteService->getStats();
         <?php endif; ?>
         <!-- Liste des notes -->
         <div class="notes-list">
-            <?php 
-            if ($theme_id) {
-                $noteService->displayNote($theme_id);
+            <?php
+            if ($motcle) {
+                $noteService->search($motcle, $theme_id);
             } else {
-                echo '<div class="empty-state"><p>Sélectionnez un thème pour voir les notes</p></div>';
+                if ($theme_id) {
+                    $noteService->displayNote($theme_id);
+                }
             }
             ?>
         </div>
@@ -153,7 +182,7 @@ $stats = $noteService->getStats();
                         <input type="text" class="form-input" id="editNoteTitle" name="title" required>
                     </div>
 
-                    
+
 
                     <div class="form-group">
                         <label>Importance</label>
@@ -216,7 +245,9 @@ $stats = $noteService->getStats();
             </div>
         </div>
     </div>
-
+    <?php
+    require_once '../includes/footer.php';
+    ?>
     <script src="../public_assets/js/script.js"></script>
 </body>
 
